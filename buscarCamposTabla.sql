@@ -2,7 +2,7 @@ SELECT
 so.name AS Tabla,
 sc.name AS Columna,
 st.name AS Tipo,
-sc.max_length AS Tamaño
+sc.max_length AS Tamanio
 FROM
 sys.objects so INNER JOIN
 sys.columns sc ON
