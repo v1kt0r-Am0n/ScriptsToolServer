@@ -13,20 +13,6 @@ GO
 
 
 
-USE [AppMovilAutenticacion]
-GO
-CREATE USER [UsrDBAppMovilAutenticacion] FOR LOGIN [UsrDBAppMovilAutenticacion]
-GO
-USE [AppMovilAutenticacion]
-GO
-ALTER ROLE [db_datareader] ADD MEMBER [UsrDBAppMovilAutenticacion]
-GO
-USE [AppMovilAutenticacion]
-GO
-ALTER ROLE [db_datawriter] ADD MEMBER [UsrDBAppMovilAutenticacion]
-GO
-
-
 SELECT '
 USE [' + name +']
 GO
@@ -36,7 +22,7 @@ USE [' + name +']
 GO
 ALTER ROLE [db_datareader] ADD MEMBER [UsrDB' + name +'] 
 GO
-USE [AppMovilAutenticacion]
+USE [' + name +']
 GO
 ALTER ROLE [db_datawriter] ADD MEMBER [UsrDB' + name +'] 
 GO

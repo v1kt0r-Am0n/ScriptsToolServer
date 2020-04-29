@@ -1,27 +1,27 @@
 --Primero ponemos la BD en modo monousuario.
---Usamos el parámetro ROLLBACK IMMEDIATE para que se ejecute de immediato.
+--Usamos el parï¿½metro ROLLBACK IMMEDIATE para que se ejecute de immediato.
 
 USE master;
 GO	
-ALTER DATABASE CapaMedia_V2
+ALTER DATABASE Nombre_base
 SET SINGLE_USER
 WITH ROLLBACK IMMEDIATE;
 GO
-ALTER DATABASE CapaMedia_V2
+ALTER DATABASE Nombre_base
 SET OFFLINE;
 GO
 
---Si queremos devolver al estado inicial (multiusuario y en línea) usamos los siguientes comandos:
+--Si queremos devolver al estado inicial (multiusuario y en lï¿½nea) usamos los siguientes comandos:
 USE master;
 GO	
-ALTER DATABASE CapaMedia_V2
+ALTER DATABASE Nombre_base
 SET ONLINE;
 GO
-ALTER DATABASE CapaMedia_V2
+ALTER DATABASE Nombre_base
 SET MULTI_USER;
 GO
 
-
+---Generar script para la instancia
 SELECT ' 
 USE master;
 GO	
@@ -32,7 +32,6 @@ GO
 ALTER DATABASE ' + name + '
 SET OFFLINE;
 GO'
-
 
 FROM sys.databases   
 where name not in (

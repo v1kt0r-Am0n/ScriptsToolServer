@@ -4,7 +4,7 @@ CURSOR FOR
 SELECT spid,dbs.name AS dbname
 FROM master..sysprocesses pro, master..sysdatabases dbs
 WHERE pro.dbid = dbs.dbid
-AND dbs.name = 'SCICentralesDeRiesgo'
+AND dbs.name = '_nombre de la base_'
 FOR READ ONLY 
 DECLARE @varspid AS integer
 DECLARE @vardbname AS varchar(256)
@@ -28,25 +28,3 @@ SELECT * FROM sys.server_principals where type='S'
 and name not in ('guest','INFORMATION_SCHEMA','sys')
 
 
-
-USE [CMC_COBRANZAS]
-GO
-CREATE USER [UsrSCILocal] FOR LOGIN [UsrSCILocal]
-GO
-USE [CMC_COBRANZAS]
-GO
-ALTER ROLE [db_owner] ADD MEMBER [UsrSCILocal]
-GO
-
-
-
-
-
-USE [PRODCreditos]
-GO
-CREATE USER [CREDIVALORES\flopez] FOR LOGIN [CREDIVALORES\flopez]
-GO
-USE [PRODCreditos]
-GO
-ALTER ROLE [db_owner] ADD MEMBER [CREDIVALORES\flopez]
-GO
