@@ -1,0 +1,20 @@
+{
+    "sqltools.connections": [
+        {
+            "mssqlOptions": {
+                "appName": "SQLTools",
+                "useUTC": true,
+                "encrypt": true
+            },
+            "previewLimit": 50,
+            "server": "192.168.4.103",
+            "port": 1433,
+            "driver": "MSSQL",
+            "name": "sqlclu2",
+            "group": "Produccion",
+            "database": "master",
+            "username": "ConsultaCred",
+            "password": "C0nsult4Cr3d"
+        }
+    ]
+}
