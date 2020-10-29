@@ -7,7 +7,7 @@ Declare @SqlVersion varchar(5)
 Declare @last varchar(155), @current varchar(255), @typ varchar(255), @description varchar(4000)
 Declare @NombreTabla nvarchar(100)
 
---crear la tabla donde se van a guardar los tamaños
+--crear la tabla donde se van a guardar los tamaï¿½os
 declare @tamanio as table (objname varchar(255),rows varchar (100),reserved varchar(100),data varchar(100),index_size varchar(100),unused varchar(100))
 
 create Table #Tables  (id int identity(1, 1), Object_id int, Name varchar(155), Type varchar(20), [description] varchar(4000))
@@ -26,17 +26,17 @@ else
 Print '<head>'
 Print '<title>::' + DB_name()+'::</title>'
 Print '<style>'
-   
+
 Print '  body {'
 Print '  font-family:verdana;'
 Print '  font-size:9pt;'
 Print '  }'
-  
+
 Print '  td {'
 Print '  font-family:verdana;'
 Print '  font-size:9pt;'
 Print '  }'
-  
+
 Print '  th {'
 Print '  font-family:verdana;'
 Print '  font-size:9pt;'
@@ -60,20 +60,20 @@ if @SqlVersion = '2000'
 	begin
 		insert into #Tables (Object_id, Name, Type, [description])
 		--FOR 2000
-		select object_id(table_name),  '[' + table_schema + '].[' + table_name + ']', 
+		select object_id(table_name),  '[' + table_schema + '].[' + table_name + ']',
 		case when table_type = 'BASE TABLE'  then 'Table'   else 'View' end,
 		cast(p.value as varchar(4000))
 		from information_schema.tables t
 		left outer join sysproperties p on p.id = object_id(t.table_name) and smallid = 0 and p.name = 'MS_Description'
 		order by table_type, table_schema, table_name
 	end
- else 
+ else
  if @SqlVersion = '2005'
 	begin
 		insert into #Tables (Object_id, Name, Type, [description])
 		--FOR 2005
 		Select o.object_id,  '[' + s.name + '].[' + o.name + ']',
-		case when type = 'V' then 'View' when type = 'U' then 'Table' end, 
+		case when type = 'V' then 'View' when type = 'U' then 'Table' end,
 		cast(p.value as varchar(4000))
 		from sys.objects o
 		left outer join sys.schemas s on s.schema_id = o.schema_id
@@ -90,7 +90,7 @@ While(@i <= @maxi)
 	begin
 		select @Output =  '<tr><td align="center">' + Cast((@i) as varchar) + '</td><td><a href="#' + Type + ':' + name + '">' + name + '</a></td><td>' + Type + '</td></tr>'
 		from #Tables where id = @i
- 
+
 		print @Output
 		set @i = @i + 1
 	end
@@ -110,12 +110,12 @@ While(@i <= @maxi)
 		print '<br /><br /><br /><table border="0" cellspacing="0" cellpadding="0" width="1250px"><tr><td align="right"><a href="#index">Index</a></td></tr>'
 		print @Output
 		print '</table><br />'
-		print '<table border="0" cellspacing="0" cellpadding="0" width="1250px"><tr><th align="left">Nro Filas</th><th align="left">Reservado</th><th align="left">Tamaño de los Datos</th><th align="left">Tamaño de los Indices</th><th align="left">No Usado</th></tr>'
-		select @Output =  '<tr><td align="left">'+ rows +'</td><td align="left">'+ reserved +'</td><td align="left">' + data + '</td><td align="left">' + index_size + '</td><td align="left">' + unused+ '</td></tr>' 
+		print '<table border="0" cellspacing="0" cellpadding="0" width="1250px"><tr><th align="left">Nro Filas</th><th align="left">Reservado</th><th align="left">Tamaï¿½o de los Datos</th><th align="left">Tamaï¿½o de los Indices</th><th align="left">No Usado</th></tr>'
+		select @Output =  '<tr><td align="left">'+ rows +'</td><td align="left">'+ reserved +'</td><td align="left">' + data + '</td><td align="left">' + index_size + '</td><td align="left">' + unused+ '</td></tr>'
 		from @tamanio
 		print @Output
 		print '</table><br />'
-		
+
 		print '<table border="0" cellspacing="0" cellpadding="0" width="1250px"><tr><td><b>Description</b></td></tr><tr><td>' + isnull(@description,'') + '</td></tr></table><br />'
 
  --table columns
@@ -128,10 +128,10 @@ if @SqlVersion = '2000'
 		type_name(xtype) + (
 		case when (type_name(xtype) = 'varchar' or type_name(xtype) = 'nvarchar' or type_name(xtype) ='char' or type_name(xtype) ='nchar')
 		then '(' + cast(length as varchar) + ')'
-		when type_name(xtype) = 'decimal' 
+		when type_name(xtype) = 'decimal'
 		then '(' + cast(prec as varchar) + ',' + cast(scale as varchar)   + ')'
 		else ''
-     end    
+     end
 		),
 		case when isnullable = 1 then 'Y' else 'N'  end,
 		cast(p.value as varchar(8000)),
@@ -142,19 +142,19 @@ if @SqlVersion = '2000'
 		where t.id = @i
 		order by c.colorder
 	end
- else 
+ else
  if @SqlVersion = '2005'
 	begin
 		insert into #Columns  (Name, Type, Nullable, [description],valor)
-		--FOR 2005 
+		--FOR 2005
 		Select c.name,
 		type_name(user_type_id) + (
 		case when (type_name(user_type_id) = 'varchar' or type_name(user_type_id) = 'nvarchar' or type_name(user_type_id) ='char' or type_name(user_type_id) ='nchar')
 		then '(' + cast(max_length as varchar) + ')'
-		when type_name(user_type_id) = 'decimal' 
+		when type_name(user_type_id) = 'decimal'
 		then '(' + cast([precision] as varchar) + ',' + cast(scale as varchar)   + ')'
 		else ''
-		end    
+		end
 		),
 		case when is_nullable = 1 then 'Y' else 'N'  end,
 		cast(p.value as varchar(4000)),
@@ -171,13 +171,13 @@ if @SqlVersion = '2000'
 
  print '<table border="0" cellspacing="0" cellpadding="0" width="1250px"><tr><td><b>Table Columns</b></td></tr></table>'
  print '<table border="0" colorbackground="#249732" cellspacing="1" cellpadding="0" width="1250px"><tr><th>Sr.</th><th>Name</th><th>Datatype</th><th>Nullable</th><th>Description</th><th>Value</th></tr>'
- 
+
  While(@j <= @maxj)
  begin
   select @Output = '<tr><td width="30px" align="center">' + Cast((@j) as varchar) + '</td><td width="200px">' + isnull(name,'')  + '</td><td width="200px">' +  upper(isnull(Type,'')) + '</td><td width="50px" align="center">' + isnull(Nullable,'N') + '</td><td width="650px">' + isnull([description],'') + '</td><td width="650px">' + isnull(valor,'')  + '</td></tr>'
    from #Columns  where id = @j
-  
-  print  @Output  
+
+  print  @Output
   Set @j = @j + 1;
  end
 
@@ -189,7 +189,7 @@ if @SqlVersion = '2000'
   begin
   insert into #FK  (Name, col, refObj, refCol)
  --  FOR 2000
-  select object_name(constid), s.name,  object_name(rkeyid) ,  s1.name 
+  select object_name(constid), s.name,  object_name(rkeyid) ,  s1.name
     from sysforeignkeys f
      inner join sysobjects o on o.id = f.constid
      inner join syscolumns s on s.id = f.fkeyid and s.colorder = f.fkey
@@ -197,19 +197,19 @@ if @SqlVersion = '2000'
      inner join #Tables t on t.object_id = f.fkeyid
     where t.id = @i
     order by 1
-  end 
+  end
  else if @SqlVersion = '2005'
   begin
   insert into #FK  (Name, col, refObj, refCol)
 --  FOR 2005
-  select f.name, COL_NAME (fc.parent_object_id, fc.parent_column_id) , object_name(fc.referenced_object_id) , COL_NAME (fc.referenced_object_id, fc.referenced_column_id)    
+  select f.name, COL_NAME (fc.parent_object_id, fc.parent_column_id) , object_name(fc.referenced_object_id) , COL_NAME (fc.referenced_object_id, fc.referenced_column_id)
   from sys.foreign_keys f
-   inner  join  sys.foreign_key_columns  fc  on f.object_id = fc.constraint_object_id 
+   inner  join  sys.foreign_key_columns  fc  on f.object_id = fc.constraint_object_id
    inner join #Tables t on t.object_id = f.parent_object_id
   where t.id = @i
   order by f.name
   end
- 
+
  Set @maxj =   @@rowcount
  set @j = 1
  if (@maxj >0)
@@ -319,7 +319,7 @@ if @SqlVersion = '2000'
    order by c.name
  end
  Set @maxj =   @@rowcount
- 
+
  set @j = 1
  if (@maxj >0)
  begin
@@ -361,7 +361,7 @@ if @SqlVersion = '2000'
    order by tr.name
   end
  Set @maxj =   @@rowcount
- 
+
  set @j = 1
  if (@maxj >0)
  begin
@@ -405,7 +405,7 @@ if @SqlVersion = '2000'
   end
 
  Set @maxj =   @@rowcount
- 
+
  set @j = 1
  set @sr = 1
  if (@maxj >0)
@@ -419,23 +419,23 @@ if @SqlVersion = '2000'
   While(@j <= @maxj)
   begin
    select @current = isnull(name,'') from #Indexes  where id = @j
-     
+
    if @last <> @current  and @last <> ''
-    begin 
+    begin
     print '<tr><td width="25px" align="center">' + Cast((@sr) as varchar) + '</td><td width="300px">' + @last + '</td><td width="300px">' + @typ + '</td><td>' + @Output  + '</td></tr>'
     set @Output  = ''
     set @sr = @sr + 1
     end
-   
-    
+
+
    select @Output = @Output + cols + '<br />' , @typ = type
      from #Indexes  where id = @j
-   
-   set @last = @current  
+
+   set @last = @current
    Set @j = @j + 1;
   end
   if @Output <> ''
-    begin 
+    begin
     print '<tr><td width="25px" align="center">' + Cast((@sr) as varchar) + '</td><td width="300px">' + @last + '</td><td width="300px">' + @typ + '</td><td>' + @Output  + '</td></tr>'
     end
 
@@ -444,7 +444,7 @@ if @SqlVersion = '2000'
 --------------------------------------------------------------------------------------------
    Set @i = @i + 1;
  --Print @Output
-   Print 'Autor: ROBINSON MOSCOSO - SIPSE'
+   Print 'Autor: VICTOR JULIO MACIAS-'
 end
 -------------------------------------------------------------------------------------------------------------------------------------------------------------
  -- procedures
@@ -456,13 +456,13 @@ end
 	SELECT SPECIFIC_SCHEMA AS Shema,ROUTINE_NAME As [Procedure],CREATED AS CreadoEl,LAST_ALTERED AS UltimaModificacion
 	FROM INFORMATION_SCHEMA.ROUTINES
 	WHERE ROUTINE_TYPE = 'PROCEDURE' -- AND LEFT(ROUTINE_NAME,4) ='usp_'
-	ORDER BY ROUTINE_NAME 
+	ORDER BY ROUTINE_NAME
  end
 
  Set @maxj =   @@rowcount
  set @j = 1
 
- 
+
  print '<p>'
  print '<br>'
  print '<p>'
@@ -473,8 +473,8 @@ end
  begin
   select @Output = '<tr><td width="30px" align="center">' + Cast((@j) as varchar) + '</td><td width="70px">' + isnull(Shema,'')  + '</td><td width="240px">' +  isnull([Procedure],'') + '</td><td width="280px" align="Left">' + isnull(CreadoEl,'') + '</td><td width="280px">' + isnull(UltimaModificacion,'') + '</td></tr>'
    from #Procedure  where id = @j
-  
-  print  @Output  
+
+  print  @Output
   Set @j = @j + 1;
  end
 
