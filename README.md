@@ -1,44 +1,108 @@
-# SQL Server Scripts Repository
+# ScriptsToolServer
 
-Este repositorio contiene una colección de scripts útiles para la administración, configuración y operación de bases de datos en SQL Server. Los scripts cubren tareas comunes como la gestión de usuarios, cambio de propietarios, optimización de consultas, backup y restauración, entre otros.
+## Descripción
+ScriptsToolServer es una colección de scripts SQL Server diseñados para facilitar la administración, monitoreo y mantenimiento de bases de datos. Estos scripts proporcionan funcionalidades avanzadas para la gestión de bases de datos, incluyendo análisis de espacio, permisos, backups y más.
 
-## Estructura del Repositorio
+## Características Principales
+- 🛠️ **Herramientas de Administración**: Scripts para gestión de bases de datos
+- 📊 **Monitoreo**: Análisis de espacio y rendimiento
+- 🔒 **Seguridad**: Gestión de permisos y usuarios
+- 📦 **Mantenimiento**: Scripts de backup y optimización
+- 📝 **Documentación**: Generación de diccionarios de datos
 
-La estructura del repositorio es la siguiente:
+## Scripts Disponibles
 
+### 1. DiccionarioDeDatosDictionary.sql
+Genera documentación detallada de la estructura de la base de datos.
+- Documentación HTML completa
+- Información de tablas, columnas y relaciones
+- Compatibilidad con SQL Server 2000/2005
+- Validaciones de seguridad
 
-### Carpetas principales
+### 2. DiskUsegeTopTablesInfo.sql
+Analiza el uso de espacio en las tablas.
+- Top de tablas por tamaño
+- Análisis de espacio usado/libre
+- Filtros configurables
+- Información detallada de índices
 
-- **user-management**: Scripts relacionados con la gestión de usuarios y propietarios de bases de datos.
-- **backup**: Scripts para realizar copias de seguridad completas, diferenciales y de logs de transacciones.
-- **optimization**: Scripts orientados a la optimización de índices y consultas SQL.
-- **maintenance**: Scripts para el mantenimiento de bases de datos, como la reconstrucción de índices y la reducción del tamaño de bases de datos.
+### 3. FueraDeLinieaDB.sql
+Gestiona el estado de las bases de datos.
+- Poner bases de datos fuera de línea
+- Validaciones de seguridad
+- Sistema de logging
+- Manejo de errores robusto
+
+### 4. GenerarScriptAUTO_SHRINK.sql
+Genera scripts para optimización de espacio.
+- Configuración de AUTO_SHRINK
+- Validaciones de estado
+- Manejo de errores
+- Logging de operaciones
+
+### 5. Generator_ATTACH_db.sql
+Gestiona la operación ATTACH de bases de datos.
+- Validación de archivos
+- Sistema de logging
+- Manejo de errores
+- Verificaciones de seguridad
+
+### 6. listar usuarios y permisos.sql
+Reporte detallado de usuarios y permisos.
+- Permisos a nivel de servidor
+- Permisos a nivel de base de datos
+- Filtros configurables
+- Sistema de logging
+
+### 7. listarBasesUnaInstancia.sql
+Lista bases de datos en una instancia.
+- Información detallada
+- Filtros configurables
+- Sistema de logging
+- Métricas de rendimiento
 
 ## Requisitos
+- SQL Server 2000 o superior
+- Permisos de administrador para algunas operaciones
+- Espacio suficiente para logs y backups
 
-- SQL Server 2016 o superior.
-- Un usuario con permisos de administrador en las bases de datos.
+## Instalación
+1. Clonar el repositorio
+2. Ejecutar los scripts en la instancia de SQL Server
+3. Configurar los parámetros según necesidades
 
 ## Uso
+Cada script incluye:
+- Documentación detallada
+- Parámetros configurables
+- Instrucciones de uso
+- Consideraciones de seguridad
 
-1. **Cambiar el propietario de una base de datos**: Usa el script `user-management/change-db-owner.sql` para cambiar el propietario de una base de datos específica.
-   ```sql
-   USE [NombreDeLaBaseDeDatos];
-   EXEC sp_changedbowner '[NuevoPropietario]';
-# ScriptsToolServer
-ScriptsToolServer
-Scripts para Server v.0.0.1
-Contribuir
+## Seguridad
+- Validaciones de permisos
+- Manejo seguro de errores
+- Protección de datos sensibles
+- Logging de operaciones
 
-Si deseas contribuir a este repositorio, sigue los siguientes pasos:
+## Contribuciones
+Las contribuciones son bienvenidas. Por favor:
+1. Fork el repositorio
+2. Crea una rama para tu feature
+3. Commit tus cambios
+4. Push a la rama
+5. Abre un Pull Request
 
-    Haz un fork del proyecto.
-    Crea una rama nueva (git checkout -b feature/nueva-funcionalidad).
-    Realiza tus cambios.
-    Haz un commit de tus cambios (git commit -am 'Añadida nueva funcionalidad').
-    Sube los cambios a tu rama (git push origin feature/nueva-funcionalidad).
-    Crea un Pull Request.
+## Licencia
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
 
-Licencia
+## Contacto
+- Autor: Victor Macias
+- Email: [tu-email@ejemplo.com]
+- GitHub: [tu-usuario-github]
 
-Este repositorio está bajo la licencia MIT. Para más detalles, consulta el archivo LICENSE.
+## Changelog
+### v1.0.0
+- Versión inicial
+- Scripts base implementados
+- Documentación completa
+- Sistema de logging

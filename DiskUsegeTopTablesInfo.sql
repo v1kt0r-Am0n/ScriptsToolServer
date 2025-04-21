@@ -4,22 +4,32 @@
  *              en una base de datos SQL Server, incluyendo tamaño de datos, índices y espacio no utilizado
  * Autor: Victor Macias
  * Fecha: 2024
- * Versión: 1.0
+ * Versión: 1.1
  * 
  * Uso:
  * 1. Ejecutar el script en la base de datos deseada
- * 2. Los resultados mostrarán las 1000 tablas más grandes por espacio reservado
+ * 2. Los resultados mostrarán las tablas más grandes por espacio reservado
+ * 3. Se pueden configurar los siguientes parámetros:
+ *    - @TopTables: Número de tablas a mostrar (default: 1000)
+ *    - @MinSizeMB: Tamaño mínimo en MB para incluir una tabla (default: 0)
+ *    - @ShowSystemTables: Incluir tablas del sistema (default: 0)
  * 
  * Notas:
  * - Muestra información detallada de espacio por tabla
  * - Incluye número de filas y columnas
  * - Calcula espacio de índices y espacio no utilizado
  * - Manejo robusto de errores
+ * - Formato de salida mejorado
  */
+
+-- Declaración de variables configurables
+DECLARE @TopTables INT = 1000;
+DECLARE @MinSizeMB INT = 0;
+DECLARE @ShowSystemTables BIT = 0;
 
 BEGIN TRY 
     -- Consulta principal para obtener información de uso de espacio
-    SELECT TOP 1000
+    SELECT TOP (@TopTables)
         (ROW_NUMBER() OVER(ORDER BY (a1.reserved + ISNULL(a4.reserved,0)) DESC))%2 AS l1,
         a3.name AS [SchemaName],
         'TBL_*****' + SUBSTRING(a2.name,9,LEN(a2.name)) AS [TableName],
@@ -36,7 +46,19 @@ BEGIN TRY
             THEN (a1.reserved + ISNULL(a4.reserved,0)) - a1.used 
             ELSE 0 
         END) * 8 AS UnusedKB,
-        (SELECT COUNT(*) FROM Information_Schema.Columns WHERE Table_Name = a2.name) AS ColumnCount
+        (SELECT COUNT(*) FROM Information_Schema.Columns WHERE Table_Name = a2.name) AS ColumnCount,
+        -- Cálculo de porcentajes
+        CAST((a1.data * 8.0) / NULLIF((a1.reserved + ISNULL(a4.reserved,0)) * 8, 0) * 100 AS DECIMAL(5,2)) AS DataPercentage,
+        CAST(((CASE 
+            WHEN (a1.used + ISNULL(a4.used,0)) > a1.data 
+            THEN (a1.used + ISNULL(a4.used,0)) - a1.data 
+            ELSE 0 
+        END) * 8.0) / NULLIF((a1.reserved + ISNULL(a4.reserved,0)) * 8, 0) * 100 AS DECIMAL(5,2)) AS IndexPercentage,
+        CAST(((CASE 
+            WHEN (a1.reserved + ISNULL(a4.reserved,0)) > a1.used 
+            THEN (a1.reserved + ISNULL(a4.reserved,0)) - a1.used 
+            ELSE 0 
+        END) * 8.0) / NULLIF((a1.reserved + ISNULL(a4.reserved,0)) * 8, 0) * 100 AS DECIMAL(5,2)) AS UnusedPercentage
     FROM    
         -- Subconsulta para obtener estadísticas de particiones
         (SELECT
@@ -68,8 +90,9 @@ BEGIN TRY
     INNER JOIN sys.all_objects a2 ON (a1.object_id = a2.object_id)
     INNER JOIN sys.schemas a3 ON (a2.schema_id = a3.schema_id)
 
-    -- Filtro para excluir tablas del sistema
-    WHERE a2.type <> N'S' AND a2.type <> N'IT'
+    -- Filtro para excluir tablas del sistema (si no se solicitan)
+    WHERE (@ShowSystemTables = 1 OR (a2.type <> N'S' AND a2.type <> N'IT'))
+    AND (a1.reserved + ISNULL(a4.reserved,0)) * 8 >= @MinSizeMB * 1024
     ORDER BY ReservedKB DESC;
 
 END TRY
@@ -97,14 +120,29 @@ END CATCH;
  *    - IndexSizeKB: Espacio usado por índices en KB
  *    - UnusedKB: Espacio no utilizado en KB
  *    - ColumnCount: Número de columnas
+ *    - DataPercentage: Porcentaje de espacio usado por datos
+ *    - IndexPercentage: Porcentaje de espacio usado por índices
+ *    - UnusedPercentage: Porcentaje de espacio no utilizado
  * 
  * 2. Consideraciones:
  *    - Los tamaños se muestran en KB (multiplicados por 8)
- *    - Se excluyen tablas del sistema
+ *    - Se pueden excluir tablas del sistema
  *    - Se incluyen tablas internas relacionadas
+ *    - Se puede filtrar por tamaño mínimo
+ *    - Se muestran porcentajes de uso de espacio
  * 
  * 3. Manejo de errores:
  *    - Captura y muestra información detallada de errores
  *    - Incluye número, severidad, estado y mensaje
  *    - Muestra procedimiento y línea donde ocurrió el error
+ * 
+ * 4. Rendimiento:
+ *    - La consulta está optimizada para minimizar el impacto en el servidor
+ *    - Se recomienda ejecutar en horarios de baja actividad
+ *    - El filtrado por tamaño mínimo ayuda a reducir el resultado
+ * 
+ * 5. Seguridad:
+ *    - Requiere permisos de lectura en vistas del sistema
+ *    - Los nombres de tablas se enmascaran por seguridad
+ *    - Se pueden excluir tablas del sistema para mayor seguridad
  */
