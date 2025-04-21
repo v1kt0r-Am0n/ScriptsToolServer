@@ -1,52 +1,110 @@
-begin try 
+/*
+ * Script: DiskUsegeTopTablesInfo.sql
+ * Descripción: Consulta que muestra información detallada sobre el uso de espacio de las tablas
+ *              en una base de datos SQL Server, incluyendo tamaño de datos, índices y espacio no utilizado
+ * Autor: Victor Macias
+ * Fecha: 2024
+ * Versión: 1.0
+ * 
+ * Uso:
+ * 1. Ejecutar el script en la base de datos deseada
+ * 2. Los resultados mostrarán las 1000 tablas más grandes por espacio reservado
+ * 
+ * Notas:
+ * - Muestra información detallada de espacio por tabla
+ * - Incluye número de filas y columnas
+ * - Calcula espacio de índices y espacio no utilizado
+ * - Manejo robusto de errores
+ */
 
+BEGIN TRY 
+    -- Consulta principal para obtener información de uso de espacio
     SELECT TOP 1000
-        (row_number() over(order by (a1.reserved + ISNULL(a4.reserved,0)) desc))%2 as l1,
-        a3.name AS [schemaname],
-        'TBL_*****'+substring(a2.name,9,LEN(a2.name)) AS [tablename],
-        a1.rows as row_count,
-        (a1.reserved + ISNULL(a4.reserved,0))* 8 AS reserved,
-        a1.data * 8 AS data,
-        (CASE WHEN (a1.used + ISNULL(a4.used,0)) > a1.data THEN (a1.used + ISNULL(a4.used,0)) - a1.data ELSE 0 END) * 8 AS index_size,
-        (CASE WHEN (a1.reserved + ISNULL(a4.reserved,0)) > a1.used THEN (a1.reserved + ISNULL(a4.reserved,0)) - a1.used ELSE 0 END) * 8 AS unused
-		,(SELECT  COUNT(*) As NumeroCampos FROM Information_Schema.Columns WHERE Table_Name = a2.name  ) as numero_columnas
-    FROM    (   SELECT
-                ps.object_id,
-                SUM ( CASE WHEN (ps.index_id < 2) THEN row_count    ELSE 0 END ) AS [rows],
-                SUM (ps.reserved_page_count) AS reserved,
-                SUM (CASE   WHEN (ps.index_id < 2) THEN (ps.in_row_data_page_count + ps.lob_used_page_count + ps.row_overflow_used_page_count)
-                            ELSE (ps.lob_used_page_count + ps.row_overflow_used_page_count) END
-                    ) AS data,
-                SUM (ps.used_page_count) AS used
-                FROM sys.dm_db_partition_stats ps
-                GROUP BY ps.object_id
-            ) AS a1
+        (ROW_NUMBER() OVER(ORDER BY (a1.reserved + ISNULL(a4.reserved,0)) DESC))%2 AS l1,
+        a3.name AS [SchemaName],
+        'TBL_*****' + SUBSTRING(a2.name,9,LEN(a2.name)) AS [TableName],
+        a1.rows AS RowCount,
+        (a1.reserved + ISNULL(a4.reserved,0)) * 8 AS ReservedKB,
+        a1.data * 8 AS DataKB,
+        (CASE 
+            WHEN (a1.used + ISNULL(a4.used,0)) > a1.data 
+            THEN (a1.used + ISNULL(a4.used,0)) - a1.data 
+            ELSE 0 
+        END) * 8 AS IndexSizeKB,
+        (CASE 
+            WHEN (a1.reserved + ISNULL(a4.reserved,0)) > a1.used 
+            THEN (a1.reserved + ISNULL(a4.reserved,0)) - a1.used 
+            ELSE 0 
+        END) * 8 AS UnusedKB,
+        (SELECT COUNT(*) FROM Information_Schema.Columns WHERE Table_Name = a2.name) AS ColumnCount
+    FROM    
+        -- Subconsulta para obtener estadísticas de particiones
+        (SELECT
+            ps.object_id,
+            SUM(CASE WHEN (ps.index_id < 2) THEN row_count ELSE 0 END) AS [rows],
+            SUM(ps.reserved_page_count) AS reserved,
+            SUM(CASE   
+                WHEN (ps.index_id < 2) 
+                THEN (ps.in_row_data_page_count + ps.lob_used_page_count + ps.row_overflow_used_page_count)
+                ELSE (ps.lob_used_page_count + ps.row_overflow_used_page_count) 
+            END) AS data,
+            SUM(ps.used_page_count) AS used
+        FROM sys.dm_db_partition_stats ps
+        GROUP BY ps.object_id) AS a1
 
-    LEFT OUTER JOIN (   SELECT
-                        it.parent_id,
-                        SUM(ps.reserved_page_count) AS reserved,
-                        SUM(ps.used_page_count) AS used
-                        FROM sys.dm_db_partition_stats ps
-                        INNER JOIN sys.internal_tables it ON (it.object_id = ps.object_id)
-                        WHERE it.internal_type IN (202,204)
-                        GROUP BY it.parent_id
-                    ) AS a4 ON (a4.parent_id = a1.object_id)
+    -- Join para obtener información de tablas internas
+    LEFT OUTER JOIN (
+        SELECT
+            it.parent_id,
+            SUM(ps.reserved_page_count) AS reserved,
+            SUM(ps.used_page_count) AS used
+        FROM sys.dm_db_partition_stats ps
+        INNER JOIN sys.internal_tables it ON (it.object_id = ps.object_id)
+        WHERE it.internal_type IN (202,204)
+        GROUP BY it.parent_id
+    ) AS a4 ON (a4.parent_id = a1.object_id)
 
-    INNER JOIN sys.all_objects a2  ON ( a1.object_id = a2.object_id )
-
+    -- Joins para obtener nombres de objetos y esquemas
+    INNER JOIN sys.all_objects a2 ON (a1.object_id = a2.object_id)
     INNER JOIN sys.schemas a3 ON (a2.schema_id = a3.schema_id)
 
-    WHERE a2.type <> N'S' and a2.type <> N'IT'
+    -- Filtro para excluir tablas del sistema
+    WHERE a2.type <> N'S' AND a2.type <> N'IT'
+    ORDER BY ReservedKB DESC;
 
-end try
-begin catch
-    select
-    -100 as l1
-    ,   1 as schemaname
-    ,       ERROR_NUMBER() as tablename
-    ,       ERROR_SEVERITY() as row_count
-    ,       ERROR_STATE() as reserved
-    ,       ERROR_MESSAGE() as data
-    ,       1 as index_size
-    ,       1 as unused
-end catch
+END TRY
+BEGIN CATCH
+    -- Manejo de errores detallado
+    SELECT
+        -100 AS ErrorIndicator,
+        ERROR_NUMBER() AS ErrorNumber,
+        ERROR_SEVERITY() AS ErrorSeverity,
+        ERROR_STATE() AS ErrorState,
+        ERROR_MESSAGE() AS ErrorMessage,
+        ERROR_PROCEDURE() AS ErrorProcedure,
+        ERROR_LINE() AS ErrorLine;
+END CATCH;
+
+/*
+ * Notas adicionales:
+ * 1. Columnas del resultado:
+ *    - l1: Indicador de fila par/impar para formato
+ *    - SchemaName: Nombre del esquema
+ *    - TableName: Nombre de la tabla (enmascarado)
+ *    - RowCount: Número de filas
+ *    - ReservedKB: Espacio total reservado en KB
+ *    - DataKB: Espacio usado por datos en KB
+ *    - IndexSizeKB: Espacio usado por índices en KB
+ *    - UnusedKB: Espacio no utilizado en KB
+ *    - ColumnCount: Número de columnas
+ * 
+ * 2. Consideraciones:
+ *    - Los tamaños se muestran en KB (multiplicados por 8)
+ *    - Se excluyen tablas del sistema
+ *    - Se incluyen tablas internas relacionadas
+ * 
+ * 3. Manejo de errores:
+ *    - Captura y muestra información detallada de errores
+ *    - Incluye número, severidad, estado y mensaje
+ *    - Muestra procedimiento y línea donde ocurrió el error
+ */
