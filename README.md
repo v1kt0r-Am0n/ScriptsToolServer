@@ -97,8 +97,8 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 ## Contacto
 - Autor: Victor Macias
-- Email: [tu-email@ejemplo.com]
-- GitHub: [tu-usuario-github]
+## - Email: [tu-email@ejemplo.com]
+## - GitHub: [tu-usuario-github]
 
 ## Changelog
 ### v1.0.0
