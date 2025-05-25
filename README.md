@@ -97,12 +97,12 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 ## Contacto
 - Autor: Victor Macias
-## - Email: [tu-email@ejemplo.com]
-## - GitHub: [tu-usuario-github]
+## - Email: [lidhr3cs@anonaddy.com]
+
 
 ## Changelog
 ### v1.0.0
-- Versión inicial
+- Versión inicials
 - Scripts base implementados
 - Documentación completa
 - Sistema de logging
