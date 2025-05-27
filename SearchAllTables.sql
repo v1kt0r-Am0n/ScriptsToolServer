@@ -1,4 +1,4 @@
-Linea servicio al cliente en Bogotá 486 39 79 
+
 
 CREATE PROC SearchAllTables
 (
